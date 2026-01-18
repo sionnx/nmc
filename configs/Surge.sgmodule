@@ -1,0 +1,10 @@
+#!name=网易云控制器
+#!desc=
+#!category=软件增强
+
+[MITM]
+hostname = %APPEND% interface.music.163.com
+
+[Script]
+NMC = type=http-request,pattern=^https://interface\.music\.163\.com/eapi,script-path=https://github.com/sionnx/nmc/releases/latest/download/nmc.js,requires-body=true
+NMC = type=http-response,pattern=^https://interface\.music\.163\.com/eapi,script-path=https://github.com/sionnx/nmc/releases/latest/download/nmc.js,requires-body=true

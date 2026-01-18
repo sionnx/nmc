@@ -1,0 +1,1 @@
+- The compiled output will run in Chrome V8 and must not use Node.js or browser-specific APIs.

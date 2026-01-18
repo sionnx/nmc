@@ -1,0 +1,3 @@
+- Always answer my questions using Chinese.
+- Before modifying code, explain to me the reasons and necessity for the modification.
+- Use fewer emojis
