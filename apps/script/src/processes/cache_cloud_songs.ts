@@ -23,7 +23,7 @@ type SimpleSong = {
 }
 
 function cacheCloudSongs(body: object) {
-    if(!$request!.url.startsWith("https://interface.music.163.com/eapi/v1/cloud/get")) {
+    if(!$request!.url.includes("/eapi/v1/cloud/get")) {
         return;
     }
 

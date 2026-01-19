@@ -45,7 +45,7 @@ type SearchRequest = {
 
 
 function cacheSearchKeyword(body:object){
-  if(!$request!.url.startsWith("https://interface.music.163.com/eapi/search/pc/complex/page/v3")) {
+  if(!$request!.url.includes("/eapi/search/pc/complex/page/v3")) {
     return;
   }
 
@@ -57,14 +57,8 @@ function cacheSearchKeyword(body:object){
   console.log("search keyword cached:" + keyword);
 }
 
-function processSearchResult(url: string, body: object) {
-  if (
-    !url.startsWith(
-      "https://interface.music.163.com/eapi/search/pc/complex/page/v3"
-    )
-  ) {
-    return;
-  }
+function processSearchResult(body: object) {
+  if ( !$request!.url.includes("/eapi/search/pc/complex/page/v3")) {return; }
 
   console.log("processing search result");
 
@@ -85,16 +79,12 @@ function processSearchResult(url: string, body: object) {
     return body;
   }
 
-  const first_song = resources[0];
-
-  console.log("first_song rewritten");
-
   let keyword = $persistentStore.read("search_keyword") || "";
 
   let cloud_songs = searchCloudSongs(keyword); 
 
   cloud_songs.forEach((song: SimpleSong) => {
-    const copied_song = JSON.parse(JSON.stringify(first_song));
+    const copied_song = JSON.parse(JSON.stringify(resources[0]));
 
     copied_song.foldId = song.id.toString();
     copied_song.resourceId = song.id.toString();
@@ -126,4 +116,43 @@ function searchCloudSongs(keyword: string) : SimpleSong[] {
 }
 
 
-export { cacheSearchKeyword, processSearchResult };
+type SearchSongResult = {
+  code: number;
+  data: {
+    resources: Resource[];
+  };
+}
+
+function processSearchSongResult(body:object){
+  if(!$request!.url.includes("/eapi/search/song/list/page")) {
+    return;
+  }
+
+  const resources = (body as SearchSongResult).data.resources;
+
+  let keyword = $persistentStore.read("search_keyword") || "";
+
+  let cloud_songs = searchCloudSongs(keyword); 
+
+  cloud_songs.forEach((song: SimpleSong) => {
+    const copied_song = JSON.parse(JSON.stringify(resources[0]));
+
+    copied_song.foldId = song.id.toString();
+    copied_song.resourceId = song.id.toString();
+    copied_song.baseInfo.simpleSongData = song;
+    copied_song.baseInfo.metaData = []
+
+    copied_song.extInfo.algClickableTags = [];
+    copied_song.extInfo.algClickableTags.push({
+      clickable: false,
+      text: "音乐云盘",
+     });
+
+    resources.unshift(copied_song);
+  });
+
+  return body;
+}
+
+
+export { cacheSearchKeyword, processSearchResult, processSearchSongResult };
