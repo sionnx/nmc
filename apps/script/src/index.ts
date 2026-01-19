@@ -1,6 +1,7 @@
 import  { cacheSearchKeyword,processSearchResult} from "./processes/process_search_result";
 import { eapiReqDecrypt, eapiResDecrypt, eapiResEncrypt } from "./util/crypto";
 import { cacheCloudSongs } from "./processes/cache_cloud_songs";
+import logger from "@/util/logger";
 
 async function processRequest() {
   console.log("received request");
@@ -8,28 +9,28 @@ async function processRequest() {
   // 判断 body 的类型
   if ($request && $request.body !== undefined) {
     if (typeof $request.body === "string") {
-      console.log("body type: string");
+      logger.debug("body type: string");
       //console.log("body content:" + $request.body);
 
       const bodyParts = $request.body.split("=");
       const encryptedParams = bodyParts[1];
       const decryptedParams = eapiReqDecrypt(encryptedParams);
-      console.log("decrypted params:" + JSON.stringify(decryptedParams));
+      logger.debug("decrypted params:" + JSON.stringify(decryptedParams));
 
       cacheSearchKeyword(decryptedParams!.data);
 
     } else if ($request.body instanceof Uint8Array) {
-      console.log("body type: Uint8Array");
+      logger.debug("body type: Uint8Array");
     } else {
-      console.log("body type: unknown", typeof $request.body);
+      logger.debug("body type: unknown", typeof $request.body);
     }
   } else {
-    console.log("body is undefined or request is null");
+    logger.warn("body is undefined or request is null");
   }
 }
 
 async function processResponse() {
-  console.log("received response");
+  logger.debug("received response");
   if ($response && $response.body !== undefined && $response.body !== null) {
     const body_array = $response.body as Uint8Array; 
     const resp_body_array = Array.from(body_array)
@@ -49,7 +50,7 @@ async function processResponse() {
     $done({body: encryptedBody});
 
   } else {
-    console.log("body is undefined or response is null");
+    logger.warn("body is undefined or response is null");
   }
 }
 
@@ -61,8 +62,8 @@ async function processResponse() {
       await processResponse();
     }
     $done({});
-  } catch (error) {
-    console.log("[FAILED]Error in main execution:" +  error);
+  } catch (err) {
+    logger.error("Error in main execution:" +  err);
     $done({});
   }
 })();
